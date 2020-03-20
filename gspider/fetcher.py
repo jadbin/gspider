@@ -84,7 +84,10 @@ class Fetcher:
         return HttpResponse(request=request, response=response)
 
     def _get_session(self):
-        g = gevent.getcurrent().minimal_ident
+        try:
+            g = gevent.getcurrent().minimal_ident
+        except AttributeError:
+            g = 0
         if g not in self.sessions:
             self.sessions[g] = self.new_session()
         return self.sessions[g]
