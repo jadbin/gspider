@@ -104,11 +104,10 @@ class Crawler:
             self.event_bus.send(events.response_received, response=resp)
             try:
                 result = self._parse(resp)
+            except StopCrawler:
+                raise
             except Exception as e:
-                if isinstance(e, StopCrawler):
-                    log.info('Try to stop crawler: %s', e)
-                    raise
-                elif isinstance(e, IgnoreRequest):
+                if isinstance(e, IgnoreRequest):
                     self.event_bus.send(events.request_ignored, request=resp.request, error=e)
                 else:
                     log.warning("Failed to parse %s", resp, exc_info=True)

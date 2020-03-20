@@ -2,9 +2,10 @@
 
 import time
 import logging
-from threading import Semaphore
 from collections import deque
 from heapq import heappush, heappop
+
+from gevent.lock import Semaphore
 
 from .utils import cmp
 
