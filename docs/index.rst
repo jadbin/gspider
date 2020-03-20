@@ -5,7 +5,3 @@
 
 Welcome to gspider's documentation!
 ===================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
