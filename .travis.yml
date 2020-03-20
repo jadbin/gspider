@@ -1,9 +1,5 @@
 language: python
 sudo: false
-addons:
-  apt:
-    packages:
-      - libgnutls-dev
 matrix:
   include:
     - python: 3.6
