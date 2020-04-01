@@ -4,6 +4,8 @@ import inspect
 
 from requests.models import Response
 
+from gspider.utils import get_encoding_from_content, get_encoding_from_content_type
+
 
 class HttpRequest:
     def __init__(self, url, method="GET", params=None, body=None, json=None, headers=None, proxies=None,
@@ -86,6 +88,7 @@ class HttpResponse:
         """
         self.request = request
         self.response = response
+        self._encoding = None
 
     def __str__(self):
         return '<{}, {}>'.format(self.status, self.url)
@@ -109,8 +112,14 @@ class HttpResponse:
 
     @property
     def text(self):
-        if self.response:
-            return self.response.text
+        if self._encoding is None:
+            encoding = get_encoding_from_content_type(self.response.headers.get("Content-Type"))
+            if not encoding and self.response.content:
+                encoding = get_encoding_from_content(self.response.content)
+            encoding = encoding or 'utf-8'
+            self._encoding = encoding
+            self.response.encoding = encoding
+        return self.response.text
 
     @property
     def meta(self):

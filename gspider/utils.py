@@ -5,6 +5,8 @@ import hashlib
 import logging
 from importlib import import_module
 from os.path import isfile
+import re
+import cgi
 
 from urllib.parse import urlsplit, parse_qsl, urlencode
 
@@ -119,3 +121,31 @@ def request_fingerprint(request):
                                                   final_query)))
     sha1.update(request.body or b'')
     return sha1.hexdigest()
+
+
+def get_encoding_from_content_type(content_type):
+    if content_type:
+        content_type, params = cgi.parse_header(content_type)
+        if "charset" in params:
+            return params["charset"]
+
+
+_charset_flag = re.compile(r"""<meta.*?charset=["']*(.+?)["'>]""", flags=re.I)
+_pragma_flag = re.compile(r"""<meta.*?content=["']*;?charset=(.+?)["'>]""", flags=re.I)
+_xml_flag = re.compile(r"""^<\?xml.*?encoding=["']*(.+?)["'>]""")
+
+
+def get_encoding_from_content(content):
+    if isinstance(content, bytes):
+        content = content.decode("ascii", errors="ignore")
+    elif not isinstance(content, str):
+        raise ValueError("content should be bytes or str")
+    s = _charset_flag.search(content)
+    if s:
+        return s.group(1).strip()
+    s = _pragma_flag.search(content)
+    if s:
+        return s.group(1).strip()
+    s = _xml_flag.search(content)
+    if s:
+        return s.group(1).strip()
